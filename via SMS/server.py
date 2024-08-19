@@ -1,6 +1,7 @@
 import serial
 import time
 
+# Same explanation as client.py
 def send_sms(ser, recipient, message):
     ser.write(b'AT+CMGF=1\r')  # Set SMS mode to text
     time.sleep(1)
@@ -36,3 +37,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# End of server.py
