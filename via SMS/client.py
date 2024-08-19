@@ -1,44 +1,62 @@
-import serial  # A module for accessing the serial port, used to communicate with the GSM modem.
+import serial
 import time
-from random import randint  # Simulates temperature reading
+import hmac
+import hashlib
+from cryptography.fernet import Fernet
+from random import randint
 
-def read_temperature():  # Simulate temperature reading
+# Secret keys for HMAC and Fernet (should be securely shared)
+HMAC_KEY = b'secret_hmac_key'  # Must be the same on both server and client
+FERNET_KEY = Fernet.generate_key()  # Use the same key for both server and client
+cipher = Fernet(FERNET_KEY)
+
+def read_temperature():
     return randint(20, 30)
 
-def send_sms(ser, recipient, message): # Sends an SMS to the specified recipient with the given message
-    ser.write(b'AT+CMGF=1\r')  # This AT command sets the GSM modem to SMS text mode.
+def send_sms(ser, recipient, message):
+    ser.write(b'AT+CMGF=1\r')
     time.sleep(1)
-    ser.write(f'AT+CMGS="{recipient}"\r'.encode())  # Prepares the modem to send an SMS to the specified recipient number.
+    ser.write(f'AT+CMGS="{recipient}"\r'.encode())
     time.sleep(1)
     ser.write(f'{message}\r'.encode())
-    ser.write(b'\x1A')  # Send SMS (Ctrl+Z), The Ctrl+Z (ASCII 26) is used to indicate the end of the message and send it
+    ser.write(b'\x1A')  # Send SMS (Ctrl+Z)
     time.sleep(3)
 
-def check_for_sms(ser):  # Checks the GSM modem for incoming SMS messages.
-    ser.write(b'AT+CMGF=1\r')  # Set SMS mode to text
+def generate_hmac(message):
+    return hmac.new(HMAC_KEY, message, hashlib.sha256).digest()
+
+def check_for_sms(ser):
+    ser.write(b'AT+CMGF=1\r')
     time.sleep(1)
-    ser.write(b'AT+CMGL="ALL"\r')  # Lists all SMS messages stored on the GSM modem.
+    ser.write(b'AT+CMGL="ALL"\r')
     time.sleep(1)
-    messages = ser.readlines()  # Reads all incoming messages.
+    messages = ser.readlines()
     for msg in messages:
         if "TEMP_REQUEST" in msg.decode():
             return True
     return False
-    # If a message contains the keyword "TEMP_REQUEST", the function returns True, indicating that the server is requesting temperature data.
 
 def main():
-    ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)  # Replace with your GSM modem's port
-    #  Initializes the serial connection with the GSM modem on the specified port and baud rate (9600 in this case).
+    ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
     time.sleep(2)
 
     while True:
         if check_for_sms(ser):
             temperature = read_temperature()
-            send_sms(ser, "+1234567890", f"Current temperature: {temperature}°C")  # Replace with server's number
+            data = f"Current temperature: {temperature}°C".encode()
+
+            # Encrypt the data
+            encrypted_data = cipher.encrypt(data)
+
+            # Generate HMAC
+            hmac_value = generate_hmac(encrypted_data)
+
+            # Combine encrypted data with HMAC (separated by ':')
+            message_to_send = f"{encrypted_data.decode()}:{hmac_value.hex()}"
+
+            # Send the combined message
+            send_sms(ser, "+1234567890", message_to_send)  # Replace with server's number
         time.sleep(10)
-    #  Adds a delay between checks to avoid overwhelming the GSM modem with requests.
 
 if __name__ == "__main__":
     main()
-
-# End of the client.py file
