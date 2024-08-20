@@ -14,10 +14,15 @@ To evaluate the efficiency and reliability of the GSM-based communication system
 It is hypothesised that a GSM-based communication model can provide reliable and efficient data transmission between an edge device and a server, allowing for timely data requests and regular reporting of temperature readings, even in low-connectivity scenarios.
 # Methodology and Methods
 System Design: Develop a client-server architecture where the edge device serves as the client and the central server handles data processing and requests.
+
 GSM Integration: Implement GSM modules on the edge device for data transmission and request handling.
+
 Data Transmission Protocol: Configure the edge device to send temperature data to the server every 30 minutes. Additionally, design a mechanism for the server to request temperature data at any time.
- Before sending, each message is encrypted using this shared key, ensuring that only parties with the key can decrypt and read the messages.
+
+Before sending, each message is encrypted using this shared key, ensuring that only parties with the key can decrypt and read the messages.
+
 Hashing with SHA-256 to ensure data integrity by verifying that the message has not been altered during transmission.
+
 Testing and Evaluation: Conduct tests to evaluate the system’s reliability, response time, and data integrity under various network conditions. Analyse the performance of the GSM connection in both stable and fluctuating signal environments.
 
 
