@@ -1,49 +1,45 @@
-import serial
-import time
-import requests
 import random
+import time
+import serial
 
-# Configure the GSM module
-gsm_serial = serial.Serial('/dev/ttyS0', baudrate=9600, timeout=1)  # Replace with the correct serial port for your setup
+# Set up the serial connection with your GSM module
+serial_port = "/dev/ttyUSB0"  # Replace with your actual port
+baud_rate = 9600  # Common baud rate for GSM modules
+gsm = serial.Serial(serial_port, baud_rate, timeout=1)
 
-# APN details (replace with your carrier's details)
-APN = "your_apn_here"
-USERNAME = "your_username_here"
-PASSWORD = "your_password_here"
+# Example server IP and port (temporary)
+SERVER_URL_POST = "http://192.168.1.100:5000/send-temperature"  # Replace with your actual server's IP or domain and port
 
-SERVER_URL = "http://<server_ip>:5000/send-temperature"  # Replace with your server's public IP or domain
 
-def send_at_command(command, expected_response="OK", timeout=5):
-    gsm_serial.write((command + "\r").encode())
+def generate_temperature():
+    """Generate a random temperature value between 20.0 and 30.0 degrees Celsius."""
+    return round(random.uniform(20.0, 30.0), 2)
+
+
+def send_temperature_via_gsm(temperature):
+    """Send the temperature data to the server via GSM."""
+    at_command = f'AT+HTTPPARA="URL","{SERVER_URL_POST}"\r'
+    gsm.write(at_command.encode())
     time.sleep(1)
-    response = gsm_serial.read(timeout).decode()
-    print(f"Command: {command}, Response: {response}")
-    return expected_response in response
 
-def establish_gprs_connection():
-    send_at_command("AT")  # Check if the module is ready
-    send_at_command("AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"")
-    send_at_command(f"AT+SAPBR=3,1,\"APN\",\"{APN}\"")
-    send_at_command(f"AT+SAPBR=3,1,\"USER\",\"{USERNAME}\"")
-    send_at_command(f"AT+SAPBR=3,1,\"PWD\",\"{PASSWORD}\"")
-    send_at_command("AT+SAPBR=1,1")  # Open GPRS context
-    send_at_command("AT+SAPBR=2,1")  # Query the context
+    gsm.write('AT+HTTPACTION=1\r'.encode())
+    time.sleep(1)
 
-def close_gprs_connection():
-    send_at_command("AT+SAPBR=0,1")  # Close GPRS context
+    data_length = len(str(temperature))
+    gsm.write(f'AT+HTTPDATA={data_length},10000\r'.encode())
+    time.sleep(1)
 
-def send_temperature(temperature):
-    try:
-        data = {'temperature': temperature}
-        response = requests.post(SERVER_URL, json=data)
-        print(f"Data sent: {temperature}C, Response: {response.status_code}")
-    except Exception as e:
-        print(f"Failed to send data: {e}")
+    gsm.write(str(temperature).encode())
+    time.sleep(1)
+
+    gsm.write('AT+HTTPTERM\r'.encode())
+
+    response = gsm.read(100).decode()
+    print(f"Sent temperature: {temperature}C, GSM Response: {response}")
+
 
 if __name__ == "__main__":
-    establish_gprs_connection()
     while True:
-        temperature = round(random.uniform(20.0, 30.0), 2)  # Simulate temperature reading
-        send_temperature(temperature)
-        time.sleep(1800)  # Wait for 30 minutes before sending the next data
-    close_gprs_connection()
+        temperature = generate_temperature()
+        send_temperature_via_gsm(temperature)
+        time.sleep(1800)  # Wait for 30 minutes (1800 seconds) before sending the next data
