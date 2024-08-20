@@ -1,4 +1,5 @@
   ### SYNOPSIS 
+  
   ## Establishing a connection between an "edge" device and a server via GSM to send and request data without Wi-Fi
 
 # Introduction
@@ -22,14 +23,16 @@ Testing and Evaluation: Conduct tests to evaluate the system’s reliability, re
 
 
 # References
-Similar project where the temperature data is requested using gsm and arduino (via SMS) https://www.electroniclinic.com/request-temperature-data-using-gsm-and-arduino/
+Similar project where the temperature data is requested using gsm and arduino (via SMS):
+https://www.electroniclinic.com/request-temperature-data-using-gsm-and-arduino/  
+
 Similar project where the green-house effect is monitored:
 https://nevonprojects.com/iot-based-greenhouse-monitoring-system-using-raspberry-pi/
 
-Similar projects with source code 
+Similar projects with source code:
 https://techatronic.com/category/gsm-projects/
 
-Sample server examples that can ping GSM data
+Sample server examples that can ping GSM data:
 https://github.com/vshymanskyy/TinyGSM/blob/master/README.md
 https://github.com/ptrkrysik/gr-gsm?tab=readme-ov-file
 
