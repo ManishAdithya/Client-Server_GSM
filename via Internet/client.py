@@ -8,7 +8,7 @@ baud_rate = 9600  # Common baud rate for GSM modules
 gsm = serial.Serial(serial_port, baud_rate, timeout=1)
 
 # Example server IP and port (temporary)
-SERVER_URL_POST = "http://192.168.1.100:5000/send-temperature"  # Replace with your actual server's IP or domain and port
+SERVER_URL_POST = "http://127.0.0.1:5000/send-temperature"  # Replace with your actual server's IP or domain and port
 
 
 def generate_temperature():
