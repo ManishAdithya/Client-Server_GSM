@@ -63,21 +63,44 @@ void sendHTTPPost(String message) {
   delay(1000);
 }
 
-void loop() {
-  // Wait a few seconds between measurements
-  delay(2000);
-
-  // Read temperature from DHT sensor
+String getTemperature() {
   int t = dht.readTemperature();
+  if (isnan(t)) {
+    return "Failed to read temperature";
+  }
+  return String(t);
+}
 
-  // Check if any reads failed
-  if (isnan(h) || isnan(t)) {
-    Serial.println("Failed to read from DHT sensor!");
-    return;
+void checkForRequest() {
+  SIM900.println("AT+HTTPINIT\r");
+  delay(1000);
+  SIM900.println("AT+HTTPPARA=\"CID\",1\r");
+  delay(1000);
+  SIM900.println("AT+HTTPPARA=\"URL\",\"http://" + SERVER_IP + ":" + SERVER_PORT + "/get-temperature\"\r"); // URL to check for requests
+  delay(1000);
+  SIM900.println("AT+HTTPACTION=0\r"); // HTTP GET request
+  delay(1000);
+
+  String response = "";
+  while (SIM900.available()) {
+    response += char(SIM900.read());
   }
 
-  // Create JSON payload
-  String message = "{\"temperature\": " + String(t) "}";
+  if (response.indexOf("CHECK_TEMP") >= 0) {
+    String temp = getTemperature();
+    sendHTTPPost("{\"temperature\": " + temp + "}");
+  }
+
+  SIM900.println("AT+HTTPTERM\r");
+  delay(1000);
+}
+
+void loop() {
+  checkForRequest(); // Check if the server is asking for the temperature
+
+  // Send temperature at regular intervals
+  delay(2000);
+  String message = "{\"temperature\": " + getTemperature() + "}";
   sendHTTPPost(message);
 
   delay(1800000); // Wait for 30 minutes (1800 seconds) before sending the next data
