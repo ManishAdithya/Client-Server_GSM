@@ -1,5 +1,4 @@
-  ### SYNOPSIS 
-  
+
   ## Establishing a connection between an "edge" device and a server via GSM to send and request data without Wi-Fi
 
 # Introduction
@@ -34,6 +33,7 @@ https://techatronic.com/category/gsm-projects/
 
 Sample server examples that can ping GSM data:
 https://github.com/vshymanskyy/TinyGSM/blob/master/README.md
+
 https://github.com/ptrkrysik/gr-gsm?tab=readme-ov-file
 
 
