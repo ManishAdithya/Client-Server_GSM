@@ -26,13 +26,16 @@ Similar project where the temperature data is requested using gsm and arduino (v
 
 https://www.electroniclinic.com/request-temperature-data-using-gsm-and-arduino/  
 
+
 Similar project where the green-house effect is monitored:
 
 https://nevonprojects.com/iot-based-greenhouse-monitoring-system-using-raspberry-pi/
 
+
 Similar projects with source code:
 
 https://techatronic.com/category/gsm-projects/
+
 
 Sample server examples that can ping GSM data:
 
