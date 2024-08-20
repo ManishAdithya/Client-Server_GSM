@@ -1,62 +1,49 @@
 import serial
 import time
-import hmac
-import hashlib
-from cryptography.fernet import Fernet
-from random import randint
+import requests
+import random
 
-# Secret keys for HMAC and Fernet (should be securely shared)
-HMAC_KEY = b'secret_hmac_key'  # Must be the same on both server and client
-FERNET_KEY = Fernet.generate_key()  # Use the same key for both server and client
-cipher = Fernet(FERNET_KEY)
+# Configure the GSM module
+gsm_serial = serial.Serial('/dev/ttyS0', baudrate=9600, timeout=1)  # Replace with the correct serial port for your setup
 
-def read_temperature():
-    return randint(20, 30)
+# APN details (replace with your carrier's details)
+APN = "your_apn_here"
+USERNAME = "your_username_here"
+PASSWORD = "your_password_here"
 
-def send_sms(ser, recipient, message):
-    ser.write(b'AT+CMGF=1\r')
+SERVER_URL = "http://<server_ip>:5000/send-temperature"  # Replace with your server's public IP or domain
+
+def send_at_command(command, expected_response="OK", timeout=5):
+    gsm_serial.write((command + "\r").encode())
     time.sleep(1)
-    ser.write(f'AT+CMGS="{recipient}"\r'.encode())
-    time.sleep(1)
-    ser.write(f'{message}\r'.encode())
-    ser.write(b'\x1A')  # Send SMS (Ctrl+Z)
-    time.sleep(3)
+    response = gsm_serial.read(timeout).decode()
+    print(f"Command: {command}, Response: {response}")
+    return expected_response in response
 
-def generate_hmac(message):
-    return hmac.new(HMAC_KEY, message, hashlib.sha256).digest()
+def establish_gprs_connection():
+    send_at_command("AT")  # Check if the module is ready
+    send_at_command("AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"")
+    send_at_command(f"AT+SAPBR=3,1,\"APN\",\"{APN}\"")
+    send_at_command(f"AT+SAPBR=3,1,\"USER\",\"{USERNAME}\"")
+    send_at_command(f"AT+SAPBR=3,1,\"PWD\",\"{PASSWORD}\"")
+    send_at_command("AT+SAPBR=1,1")  # Open GPRS context
+    send_at_command("AT+SAPBR=2,1")  # Query the context
 
-def check_for_sms(ser):
-    ser.write(b'AT+CMGF=1\r')
-    time.sleep(1)
-    ser.write(b'AT+CMGL="ALL"\r')
-    time.sleep(1)
-    messages = ser.readlines()
-    for msg in messages:
-        if "TEMP_REQUEST" in msg.decode():
-            return True
-    return False
+def close_gprs_connection():
+    send_at_command("AT+SAPBR=0,1")  # Close GPRS context
 
-def main():
-    ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
-    time.sleep(2)
-
-    while True:
-        if check_for_sms(ser):
-            temperature = read_temperature()
-            data = f"Current temperature: {temperature}°C".encode()
-
-            # Encrypt the data
-            encrypted_data = cipher.encrypt(data)
-
-            # Generate HMAC
-            hmac_value = generate_hmac(encrypted_data)
-
-            # Combine encrypted data with HMAC (separated by ':')
-            message_to_send = f"{encrypted_data.decode()}:{hmac_value.hex()}"
-
-            # Send the combined message
-            send_sms(ser, "+1234567890", message_to_send)  # Replace with server's number
-        time.sleep(10)
+def send_temperature(temperature):
+    try:
+        data = {'temperature': temperature}
+        response = requests.post(SERVER_URL, json=data)
+        print(f"Data sent: {temperature}C, Response: {response.status_code}")
+    except Exception as e:
+        print(f"Failed to send data: {e}")
 
 if __name__ == "__main__":
-    main()
+    establish_gprs_connection()
+    while True:
+        temperature = round(random.uniform(20.0, 30.0), 2)  # Simulate temperature reading
+        send_temperature(temperature)
+        time.sleep(1800)  # Wait for 30 minutes before sending the next data
+    close_gprs_connection()
