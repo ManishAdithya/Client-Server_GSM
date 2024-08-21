@@ -105,3 +105,5 @@ void loop() {
 
   delay(1800000); // Wait for 30 minutes (1800 seconds) before sending the next data
 }
+
+//End of the code 

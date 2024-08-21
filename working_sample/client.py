@@ -38,3 +38,5 @@ if __name__ == "__main__":
     while True:
         send_temperature()
         time.sleep(10)
+
+# End of client.py
