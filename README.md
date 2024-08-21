@@ -4,7 +4,7 @@
 # Introduction
 This research explores the implementation of a client-server model using GSM technology to enable data transmission between an edge device and a central server (without the usage of Wi-Fi). The primary focus is on creating a reliable communication channel where the edge device periodically sends temperature data and responds to server requests for real-time information. The server can also ping the client at any point of time and also ask for the current data. This system is intended for applications that require continuous environmental monitoring and low-latency data exchange.
 # Scenario
-Consider a remote agricultural field equipped with an edge device that monitors temperature. The edge device, connected via GSM, sends temperature data to a central server every 30 minutes. If sudden weather changes occur, the server can request real-time temperature data from the edge device. The edge device detects the current temperature and immediately transmits the data back to the server. This 
+Consider a remote agricultural field equipped with an edge device that monitors temperature. The edge device, connected via GSM, sends temperature data to a central server every 30 minutes. If sudden weather changes occur, the server can request real-time temperature data from the edge device. The edge device detects the current temperature and immediately transmits the data back to the server. 
 # Objectives
 To establish a reliable GSM connection between the edge device and server for data transmission.
 To ensure the edge device can send temperature data to the server at regular intervals (every 30 minutes).
