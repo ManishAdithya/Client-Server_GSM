@@ -1,9 +1,9 @@
 #include <SoftwareSerial.h>
-#include "DHT.h"
+#include "DHT.h" //if needed
 
 // Define DHT sensor type and pin
 #define DHTPIN 12
-#define DHTTYPE DHT11
+#define DHTTYPE DHT11 //can use DHT12 also
 DHT dht(DHTPIN, DHTTYPE);
 
 SoftwareSerial SIM900(8, 7); // GSM module connected here
@@ -13,12 +13,13 @@ const String SERVER_IP = "127.0.0.1"; // Replace with your actual server IP
 const String SERVER_PORT = "5001"; // Replace with your server port
 const String SERVER_URL = "/send-temperature"; // Endpoint URL on your server
 
+//creates the setup
 void setup() {
-  Serial.begin(9600);
-  SIM900.begin(9600);
-  dht.begin();
-  pinMode(6, OUTPUT);
-  digitalWrite(6, HIGH);
+  Serial.begin(9600);  //baude rate for data transfer in RSP32 
+  SIM900.begin(9600);  //baude rate for data transfer between RSP32 and GSM
+  dht.begin();  //initialises the DHT sensor
+  pinMode(6, OUTPUT); //Output pin (pin which connects RSP32 and GSM)
+  digitalWrite(6, HIGH); //Powering up the GSM
 
   delay(10000);  // Give time to log on to network
 
@@ -29,14 +30,14 @@ void setup() {
   delay(1000);
   SIM900.println("AT+SAPBR=3,1,\"APN\",\"your_apn\"\r"); // Set your network's APN
   delay(1000);
-  SIM900.println("AT+SAPBR=1,1\r"); // Open GPRS context
+  SIM900.println("AT+SAPBR=1,1\r"); // Open GPRS context (enabling GSM to use mobile data)
   delay(3000);
 }
 
 void sendHTTPPost(String message) {
-  SIM900.println("AT+HTTPINIT\r"); // Initialize HTTP service
+  SIM900.println("AT+HTTPINIT\r"); // Initialize HTTP service on the GSM module
   delay(1000);
-  SIM900.println("AT+HTTPPARA=\"CID\",1\r"); // Set CID parameter
+  SIM900.println("AT+HTTPPARA=\"CID\",1\r"); // Sets the Connection Id for the HTTP session
   delay(1000);
   SIM900.println("AT+HTTPPARA=\"URL\",\"http://" + SERVER_IP + ":" + SERVER_PORT + SERVER_URL + "\"\r"); // Set server URL
   delay(1000);
