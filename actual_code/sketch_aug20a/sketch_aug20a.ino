@@ -9,8 +9,8 @@ DHT dht(DHTPIN, DHTTYPE);
 SoftwareSerial SIM900(8, 7); // GSM module connected here
 
 // Server IP and port
-const String SERVER_IP = "192.168.1.100"; // Replace with your actual server IP
-const String SERVER_PORT = "5000"; // Replace with your server port
+const String SERVER_IP = "127.0.0.1"; // Replace with your actual server IP
+const String SERVER_PORT = "5001"; // Replace with your server port
 const String SERVER_URL = "/send-temperature"; // Endpoint URL on your server
 
 void setup() {

@@ -11,10 +11,10 @@ def receive_temperature():
     data = request.json
     temperature = data.get('temperature')
 
+    return jsonify({'temperature': temperature}), 200  # Respond with only the temperature
+
     # Log the received temperature data
     print(f"Received temperature: {temperature}°C")
-
-    return jsonify({'temperature': temperature}), 200  # Respond with only the temperature
 
 
 @app.route('/request-temperature', methods=['GET'])
